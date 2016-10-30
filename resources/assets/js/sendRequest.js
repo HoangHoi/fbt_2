@@ -83,7 +83,7 @@ function sendRequest(options) {
         if (typeof calback === 'function') {
             this.calback = calback;
         }
-
+        console.log(current.request);
         $.ajax({
             url: current.url.dest,
             type: current.type,
@@ -91,6 +91,9 @@ function sendRequest(options) {
             async: false,
             data: current.request,
             complete: function (data) {
+        $.each(data, function (i, v){
+            console.log(i+':'+v);
+        });
                 switch (data.status) {
                     case 200:
                         calback(data);
@@ -117,7 +120,7 @@ function sendRequest(options) {
                     default :
                         message(current.lang.unknown_error + data.status, 'error');
                         setTimeout(function () {
-                            window.location.reload(1);
+//                            window.location.reload(1);
                         }, 2000);
                 }
             }
