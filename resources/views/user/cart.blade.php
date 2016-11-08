@@ -10,7 +10,7 @@
         </h3>
     </div>
     <div class="panel-body table-booking">
-        @if (isset($bookings))
+        @if (!empty($bookings))
             <table class="table" table table-bordered>
                 <tr>
                     <th>{{ trans('label.booking_request') }}</th>
@@ -20,62 +20,57 @@
                     <th>{{ trans('label.status') }}</th>
                     <th></th>
                 </tr>
-                @if ($bookings['0'] != null)
-                    @foreach ($bookings as $booking)
-                        <tr id ="item-request-{{ $booking->id }}">
+                @foreach ($bookings as $booking)
+                    <tr id ="item-request-{{ $booking->id }}">
+                        <td>
+                        {{-- {{ dd($booking->tourSchedule->price) }} --}}
+                            <a href="{{ route('getTour', $booking->tourSchedule->tour->id) }}">
+                                {{ $booking->tourSchedule->tour->name }}
+                            </a>
+                        </td>
+                        <td>{{ $booking->created_at }}</td>
+                        <td>{{ $booking->num_humans }}</td>
+                        <td>
+                            {{ trans('user.bill_cost', [
+                                'cost' => $booking->tourSchedule->price * $booking->num_humans,
+                            ]) }}
+                        </td>
+                        @if ($booking->status == config('user.booking.new'))
                             <td>
-                                <a href="{{ route('getTour', $booking->tourSchedule->tour->id) }}">
-                                    {{ $booking->tourSchedule->tour->name }}
-                                </a>
+                                <button class="btn btn-info btn-get-checkout"
+                                    data-booking-id="{{ $booking->id }}"
+                                    data-cost="{{ $booking->tourSchedule->price * $booking->num_humans }}"
+                                >
+                                    {{ trans('user.action.checkout') }}
+                                </button>
                             </td>
-                            <td>{{ $booking->created_at }}</td>
-                            <td>{{ $booking->num_humans }}</td>
                             <td>
-                                {{ trans('user.bill_cost', [
-                                    'cost' => $booking->tourSchedule->price * $booking->num_humans,
-                                ]) }}
+                                <button class="cancel-booking btn btn-info"
+                                    data-booking-id="{{ $booking->id }}"
+                                    data-url-cancel-booking="{{ route('postCancelBooking') }}"
+                                    data-message-confirm="{{ trans('user.message.confirm_cancel_booking') }}"
+                                >
+                                    {{ trans('user.action.cancel') }}
+                                </button>
                             </td>
-                            @if ($booking->status == config('user.booking.new'))
-                                <td>
-                                    <button class="btn btn-info btn-get-checkout"
-                                        data-booking-id="{{ $booking->id }}"
-                                        data-cost="{{ $booking->tourSchedule->price * $booking->num_humans }}"
-                                    >
-                                        {{ trans('user.action.checkout') }}
-                                    </button>
-                                </td>
-                                <td>
-                                    <button class="cancel-booking btn btn-info"
-                                        data-booking-id="{{ $booking->id }}"
-                                        data-url-cancel-booking="{{ route('postCancelBooking') }}"
-                                        data-message-confirm="{{ trans('user.message.confirm_cancel_booking') }}"
-                                    >
-                                        {{ trans('user.action.cancel') }}
-                                    </button>
-                                </td>
-                            @elseif ($booking->status == config('user.booking.paid'))
-                                <td>
-                                    {{ trans('label.paid') }}
-                                </td>
-                                <td></td>
-                            @elseif ($booking->status == config('user.booking.rejected'))
-                                <td>
-                                    {{ trans('label.deny') }}
-                                </td>
-                                <td></td>
-                            @endif
-                        </tr>
-                    @endforeach
-                @else
-                    <div class="alert alert-info">
-                        {{ trans('user.message.null_booking') }}
-                    </div>
-                @endif
+                        @elseif ($booking->status == config('user.booking.paid'))
+                            <td>
+                                {{ trans('label.paid') }}
+                            </td>
+                            <td></td>
+                        @elseif ($booking->status == config('user.booking.rejected'))
+                            <td>
+                                {{ trans('label.deny') }}
+                            </td>
+                            <td></td>
+                        @endif
+                    </tr>
+                @endforeach
             </table>
             <div>{{ $bookings->links() }}</div>
         @else
             <div class="alert alert-warning">
-                {{ trans('user.message.wrong') }}
+                {{ trans('user.message.null_booking') }}
             </div>
         @endif
         <div class="modal fade" id="modal-payment-account" role="dialog">
